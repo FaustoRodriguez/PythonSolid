@@ -1,15 +1,11 @@
-import requests
 import re
-import csv
 from bs4 import BeautifulSoup
-
+from movie_IMDBrequest import getMoviesRequest
+from movie_file_writter import writeMovies
 
 def main():
     # Downloading imdb top 250 movie's data
-    url = 'http://www.imdb.com/chart/top'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'lxml')
-
+    soup = BeautifulSoup(getMoviesRequest('http://www.imdb.com/chart/top'), 'lxml')
     movies = soup.select('td.titleColumn')
     links = [a.attrs.get('href') for a in soup.select('td.titleColumn a')]
     crew = [a.attrs.get('title') for a in soup.select('td.titleColumn a')]
@@ -40,14 +36,7 @@ def main():
                 "link": links[index],
                 "preference_key": index % 4 + 1}
         list.append(data)
-
-    fields = ["preference_key", "movie_title", "star_cast", "rating", "year", "place", "vote", "link"]
-    with open("movie_results.csv", "w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fields)
-        writer.writeheader()
-        for movie in list:
-            writer.writerow({**movie})
-
+    writeMovies(list)
 
 if __name__ == '__main__':
     main()
